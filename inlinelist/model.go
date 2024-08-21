@@ -79,6 +79,10 @@ func DefaultStyles() (unfocussed Styles, focussed Styles) {
    return
 }
 
+// DefaultItemStyle returns a new ItemStyleStates struct with the given styles.
+
+
+
 // CachedItem is a struct that holds _unstyled_ rendered strings for the prefix, item, and suffix of an item,
 // and the _styled_ rendered string.
 type CachedItem[T any] struct {
@@ -245,6 +249,11 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
 
    switch msg := msg.(type) {
       case bt.KeyMsg:
+         switch msg.String() {
+            case "ctrl+c":
+               cmd = bt.Quit
+               return
+         }
          if m.Selectable {
             i := m.findIndex(m.selected)
             switch {
@@ -258,6 +267,8 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
                   } else if i < 0 {
                      m.selected = &m.Items[len(m.Items)-1]
                   }
+               case key.Matches(msg, key.NewBinding(key.WithKeys("enter"))):
+                  m.Focussed = !m.Focussed
             }
          }
    }
