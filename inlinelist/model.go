@@ -42,25 +42,25 @@ func DefaultStyles() (unfocussed Styles, focussed Styles) {
       Suffix: lg.NewStyle(),
    }
    unfocussedItemSelected := ItemStyle {
-      Main: unfocussedItemNormal.Main.Copy().
+      Main: unfocussedItemNormal.Main.
          Bold(true).
          Foreground(lg.Color("#f5e0dc")),
-      Prefix: unfocussedItemNormal.Prefix.Copy().
+      Prefix: unfocussedItemNormal.Prefix.
          Foreground(lg.Color("#f9e2af")),
-      Suffix: unfocussedItemNormal.Suffix.Copy(),
+      Suffix: unfocussedItemNormal.Suffix,
    }
    focussedItemNormal := ItemStyle {
-      Main: unfocussedItemNormal.Main.Copy().
+      Main: unfocussedItemNormal.Main.
          Foreground(lg.Color("#cdd6f4")),
-      Prefix: unfocussedItemNormal.Prefix.Copy(),
-      Suffix: unfocussedItemNormal.Suffix.Copy(),
+      Prefix: unfocussedItemNormal.Prefix,
+      Suffix: unfocussedItemNormal.Suffix,
    }
    focussedItemSelected := ItemStyle {
-      Main: focussedItemNormal.Main.Copy().
+      Main: focussedItemNormal.Main.
          Foreground(lg.Color("#f9e2af")),
-      Prefix: focussedItemNormal.Prefix.Copy().
+      Prefix: focussedItemNormal.Prefix.
          Foreground(lg.Color("#fab387")),
-      Suffix: focussedItemNormal.Suffix.Copy(),
+      Suffix: focussedItemNormal.Suffix,
    }
    unfocussed = Styles {
       List: lg.NewStyle(),
