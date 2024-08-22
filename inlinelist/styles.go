@@ -42,24 +42,29 @@ func DefaultStyles() StyleStates {
    }
    unfocussedItemFocussed := ItemStyle {
       Main: unfocussedItemNormal.Main.
-         Bold(true).
          Foreground(lg.Color("#f5e0dc")),
       Prefix: unfocussedItemNormal.Prefix.
          Foreground(lg.Color("#f9e2af")),
-      Suffix: unfocussedItemNormal.Suffix,
+      Suffix: unfocussedItemNormal.Suffix.
+         Foreground(lg.Color("#99d1db")),
    }
    focussedItemNormal := ItemStyle {
       Main: unfocussedItemNormal.Main.
          Foreground(lg.Color("#cdd6f4")),
-      Prefix: unfocussedItemNormal.Prefix,
-      Suffix: unfocussedItemNormal.Suffix,
+      Prefix: unfocussedItemNormal.Prefix.
+         Foreground(lg.Color("#B9957F")),
+      Suffix: unfocussedItemNormal.Suffix.
+         Foreground(lg.Color("#99d1db")),
    }
    focussedItemFocussed := ItemStyle {
       Main: focussedItemNormal.Main.
-         Foreground(lg.Color("#f9e2af")),
+         Foreground(lg.Color("#f9e2af")).
+         Bold(true),
       Prefix: focussedItemNormal.Prefix.
-         Foreground(lg.Color("#fab387")),
-      Suffix: focussedItemNormal.Suffix,
+         Foreground(lg.Color("#fab387")).
+         Bold(true),
+      Suffix: focussedItemNormal.Suffix.
+         Foreground(lg.Color("#89dceb")),
    }
    unfocussed := Style {
       List: lg.NewStyle(),
