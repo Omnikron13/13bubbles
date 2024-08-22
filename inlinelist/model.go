@@ -75,6 +75,7 @@ func New[T any](items ...T) (m Model[T]) {
       separator: ", ",
       RenderItem: func (item T) string { return fmt.Sprintf("%v", item) },
       KeyBindings: defaultKeyMap(),
+      Styles: DefaultStyles(),
    }
    return
 }
