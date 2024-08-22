@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-   l := inlinelist.New([]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"})
+   l := inlinelist.New("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
 
    l.Selectable = true
    l.Focussed = true
