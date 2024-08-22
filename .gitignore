@@ -1,0 +1,6 @@
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Binary of the main test/demo
+13bubbles
+
