@@ -18,16 +18,22 @@ type ItemStyleStates struct {
    Focussed ItemStyle
 }
 
-// Styles is a type grouping lipgloss styles for a list and its items, to facilitate applying different styles
+// Style is a type grouping lipgloss styles for a list and its items, to facilitate applying different styles
 // to different states of the list (e.g. focussed, etc.)
-type Styles struct {
+type Style struct {
    List lg.Style
    Item ItemStyleStates
    Seperator lg.Style
 }
 
-// DefaultStyle returns a new Styles struct with the given styles.
-func DefaultStyles() (unfocussed Styles, focussed Styles) {
+// StyleStates is a type grouping Style structs for different states of a list
+type StyleStates struct {
+   Unfocussed Style
+   Focussed Style
+}
+
+// DefaultStyles returns a new StyleStates struct with the given styles.
+func DefaultStyles() StyleStates {
    unfocussedItemNormal := ItemStyle {
       Main: lg.NewStyle().
          Foreground(lg.Color("#bac2de")),
@@ -55,21 +61,24 @@ func DefaultStyles() (unfocussed Styles, focussed Styles) {
          Foreground(lg.Color("#fab387")),
       Suffix: focussedItemNormal.Suffix,
    }
-   unfocussed = Styles {
+   unfocussed := Style {
       List: lg.NewStyle(),
       Item: ItemStyleStates {
          Normal: unfocussedItemNormal,
          Focussed: unfocussedItemFocussed,
       },
    }
-   focussed = Styles {
+   focussed := Style {
       List: lg.NewStyle(),
       Item: ItemStyleStates {
          Normal: focussedItemNormal,
          Focussed: focussedItemFocussed,
       },
    }
-   return
+   return StyleStates{
+      Unfocussed: unfocussed,
+      Focussed:   focussed,
+   }
 }
 
 // DefaultItemStyle returns a new ItemStyleStates struct with the given styles.

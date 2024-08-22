@@ -52,10 +52,7 @@ type Model[T any] struct {
    KeyBindings KeyMap
 
    // Customisable styling using lipgloss
-   Styles struct {
-      Focussed Styles
-      Unfocussed Styles
-   }
+   Styles StyleStates
 }
 
 
@@ -213,7 +210,7 @@ func (m *Model[T]) View() string {
 
    var sb strings.Builder
 
-   var styles Styles
+   var styles Style
    if m.Focussed {
       styles = m.Styles.Focussed
    } else {
