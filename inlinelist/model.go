@@ -14,7 +14,7 @@ import (
 // and the _styled_ rendered string.
 type CachedItem[T any] struct {
    item *T
-   suffix, main, prefix, focussedNormal, unfocussedNormal, focussedSelected, unfocussedSelected string
+   suffix, main, prefix, listFocussedNormal, listUnfocussedNormal, listFocussedItemFocussed, listUnfocussedItemFocussed string
 }
 
 
@@ -83,9 +83,9 @@ func New[T any](items ...T) (m Model[T]) {
 }
 
 
-// GetSelected returns a pointer to the selected item, or nil if nothing is selected (yet?), the selected item is now
+// GetFocussed returns a pointer to the selected item, or nil if nothing is selected (yet?), the selected item is now
 // gone (e.g. if the list has been filtered), or the list is not flagged as selectable in the first place.
-func (m *Model[T]) GetSelected() *T {
+func (m *Model[T]) GetFocussed() *T {
    if !m.Selectable || m.findIndex(m.selected) < 0 {
       return nil
    }
@@ -110,29 +110,29 @@ func (m *Model[T]) Init() (cmd bt.Cmd) {
          if m.RenderSuffix != nil {
             c.suffix = m.RenderSuffix(*item)
          }
-         c.unfocussedNormal = fmt.Sprintf(
+         c.listUnfocussedNormal = fmt.Sprintf(
             "%s%s%s",
             m.Styles.Unfocussed.Item.Normal.Prefix.Render(c.prefix),
             m.Styles.Unfocussed.Item.Normal.Main.Render(c.main),
             m.Styles.Unfocussed.Item.Normal.Suffix.Render(c.suffix),
          )
-         c.focussedNormal = fmt.Sprintf(
+         c.listFocussedNormal = fmt.Sprintf(
             "%s%s%s",
             m.Styles.Focussed.Item.Normal.Prefix.Render(c.prefix),
             m.Styles.Focussed.Item.Normal.Main.Render(c.main),
             m.Styles.Focussed.Item.Normal.Suffix.Render(c.suffix),
          )
-         c.unfocussedSelected = fmt.Sprintf(
+         c.listUnfocussedItemFocussed = fmt.Sprintf(
             "%s%s%s",
-            m.Styles.Unfocussed.Item.Selected.Prefix.Render(c.prefix),
-            m.Styles.Unfocussed.Item.Selected.Main.Render(c.main),
-            m.Styles.Unfocussed.Item.Selected.Suffix.Render(c.suffix),
+            m.Styles.Unfocussed.Item.Focussed.Prefix.Render(c.prefix),
+            m.Styles.Unfocussed.Item.Focussed.Main.Render(c.main),
+            m.Styles.Unfocussed.Item.Focussed.Suffix.Render(c.suffix),
          )
-         c.focussedSelected = fmt.Sprintf(
+         c.listFocussedItemFocussed = fmt.Sprintf(
             "%s%s%s",
-            m.Styles.Focussed.Item.Selected.Prefix.Render(c.prefix),
-            m.Styles.Focussed.Item.Selected.Main.Render(c.main),
-            m.Styles.Focussed.Item.Selected.Suffix.Render(c.suffix),
+            m.Styles.Focussed.Item.Focussed.Prefix.Render(c.prefix),
+            m.Styles.Focussed.Item.Focussed.Main.Render(c.main),
+            m.Styles.Focussed.Item.Focussed.Suffix.Render(c.suffix),
          )
          m.itemRenderCacheChannel <- &c
       }
@@ -223,15 +223,15 @@ func (m *Model[T]) View() string {
    for i, c := range m.itemRenderCache {
       if m.Selectable && c.item == m.selected {
          if m.Focussed {
-            sb.WriteString(c.focussedSelected)
+            sb.WriteString(c.listFocussedItemFocussed)
          } else {
-            sb.WriteString(c.unfocussedSelected)
+            sb.WriteString(c.listUnfocussedItemFocussed)
          }
       } else {
          if m.Focussed {
-            sb.WriteString(c.focussedNormal)
+            sb.WriteString(c.listFocussedNormal)
          } else {
-            sb.WriteString(c.unfocussedNormal)
+            sb.WriteString(c.listUnfocussedNormal)
          }
       }
 

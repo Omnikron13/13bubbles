@@ -15,7 +15,7 @@ type ItemStyle struct {
 // ItemStyleStates is a type grouping ItemStyle structs for different states of a list item
 type ItemStyleStates struct {
    Normal ItemStyle
-   Selected ItemStyle
+   Focussed ItemStyle
 }
 
 // Styles is a type grouping lipgloss styles for a list and its items, to facilitate applying different styles
@@ -34,7 +34,7 @@ func DefaultStyles() (unfocussed Styles, focussed Styles) {
       Prefix: lg.NewStyle(),
       Suffix: lg.NewStyle(),
    }
-   unfocussedItemSelected := ItemStyle {
+   unfocussedItemFocussed := ItemStyle {
       Main: unfocussedItemNormal.Main.
          Bold(true).
          Foreground(lg.Color("#f5e0dc")),
@@ -48,7 +48,7 @@ func DefaultStyles() (unfocussed Styles, focussed Styles) {
       Prefix: unfocussedItemNormal.Prefix,
       Suffix: unfocussedItemNormal.Suffix,
    }
-   focussedItemSelected := ItemStyle {
+   focussedItemFocussed := ItemStyle {
       Main: focussedItemNormal.Main.
          Foreground(lg.Color("#f9e2af")),
       Prefix: focussedItemNormal.Prefix.
@@ -59,14 +59,14 @@ func DefaultStyles() (unfocussed Styles, focussed Styles) {
       List: lg.NewStyle(),
       Item: ItemStyleStates {
          Normal: unfocussedItemNormal,
-         Selected: unfocussedItemSelected,
+         Focussed: unfocussedItemFocussed,
       },
    }
    focussed = Styles {
       List: lg.NewStyle(),
       Item: ItemStyleStates {
          Normal: focussedItemNormal,
-         Selected: focussedItemSelected,
+         Focussed: focussedItemFocussed,
       },
    }
    return
