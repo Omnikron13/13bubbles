@@ -12,7 +12,7 @@ func main() {
    l := inlinelist.New("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
 
    l.Selectable = true
-   l.Focussed = true
+   l.Focus()
 
    l.RenderPrefix = func(s string) string {
       switch s {

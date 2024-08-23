@@ -46,7 +46,7 @@ type Model[T any] struct {
    selected *T
 
    // Whether the list has focus, which will enable or disable keybindings, possibly change styles, etc.
-   Focussed bool
+   focussed bool
 
    // Customisable keybindings
    KeyBindings KeyMap
@@ -78,6 +78,12 @@ func New[T any](items ...T) (m Model[T]) {
       Styles: DefaultStyles(),
    }
    return
+}
+
+
+// Focus flags the list as having focus; enabling keybindings, possibly changing styles, etc.
+func (m *Model[T]) Focus() {
+   m.focussed = true
 }
 
 
@@ -141,6 +147,12 @@ func (m *Model[T]) Init() (cmd bt.Cmd) {
 }
 
 
+// IsFocussed returns whether the Model has focus.
+func (m *Model[T]) IsFocussed() bool {
+   return m.focussed
+}
+
+
 // itemToString converts an item of type T to a string, using RenderPrefix(), RenderItem(), and RenderSuffix()
 // functions (if set), returning a styled string and the unstyled rune length.
 func (m *Model[T]) itemToString(item *T, style ItemStyleStates) (string, int) {
@@ -167,10 +179,16 @@ func (m *Model[T]) itemToString(item *T, style ItemStyleStates) (string, int) {
 }
 
 
+// Unfocus flags the list as not having focus; disabling keybindings, possibly changing styles, etc.
+func (m *Model[T]) Unfocus() {
+   m.focussed = false
+}
+
+
 // Update updates the Model; part of the bubbletea Model interface.
 func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
-   m.KeyBindings.Next.SetEnabled(m.Focussed)
-   m.KeyBindings.Prev.SetEnabled(m.Focussed)
+   m.KeyBindings.Next.SetEnabled(m.focussed)
+   m.KeyBindings.Prev.SetEnabled(m.focussed)
 
    switch msg := msg.(type) {
       case bt.KeyMsg:
@@ -193,7 +211,7 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
                      m.selected = &m.Items[len(m.Items)-1]
                   }
                case key.Matches(msg, key.NewBinding(key.WithKeys("enter"))):
-                  m.Focussed = !m.Focussed
+                  m.focussed = !m.focussed
             }
          }
    }
@@ -212,7 +230,7 @@ func (m *Model[T]) View() string {
    var sb strings.Builder
 
    var styles Style
-   if m.Focussed {
+   if m.focussed {
       styles = m.Styles.Focussed
    } else {
       styles = m.Styles.Unfocussed
@@ -220,13 +238,13 @@ func (m *Model[T]) View() string {
 
    for i, c := range m.itemRenderCache {
       if m.Selectable && c.item == m.selected {
-         if m.Focussed {
+         if m.focussed {
             sb.WriteString(c.listFocussedItemFocussed)
          } else {
             sb.WriteString(c.listUnfocussedItemFocussed)
          }
       } else {
-         if m.Focussed {
+         if m.focussed {
             sb.WriteString(c.listFocussedNormal)
          } else {
             sb.WriteString(c.listUnfocussedNormal)
