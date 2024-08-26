@@ -113,30 +113,10 @@ func (m *Model[T]) Init() (cmd bt.Cmd) {
          if m.RenderSuffix != nil {
             c.suffix = m.RenderSuffix(*item)
          }
-         c.listUnfocussedItemUnfocussed = fmt.Sprintf(
-            "%s%s%s",
-            m.Styles.Unfocussed.Item.Unfocussed.Prefix.Render(c.prefix),
-            m.Styles.Unfocussed.Item.Unfocussed.Main.Render(c.main),
-            m.Styles.Unfocussed.Item.Unfocussed.Suffix.Render(c.suffix),
-         )
-         c.listFocussedItemUnfocussed = fmt.Sprintf(
-            "%s%s%s",
-            m.Styles.Focussed.Item.Unfocussed.Prefix.Render(c.prefix),
-            m.Styles.Focussed.Item.Unfocussed.Main.Render(c.main),
-            m.Styles.Focussed.Item.Unfocussed.Suffix.Render(c.suffix),
-         )
-         c.listUnfocussedItemFocussed = fmt.Sprintf(
-            "%s%s%s",
-            m.Styles.Unfocussed.Item.Focussed.Prefix.Render(c.prefix),
-            m.Styles.Unfocussed.Item.Focussed.Main.Render(c.main),
-            m.Styles.Unfocussed.Item.Focussed.Suffix.Render(c.suffix),
-         )
-         c.listFocussedItemFocussed = fmt.Sprintf(
-            "%s%s%s",
-            m.Styles.Focussed.Item.Focussed.Prefix.Render(c.prefix),
-            m.Styles.Focussed.Item.Focussed.Main.Render(c.main),
-            m.Styles.Focussed.Item.Focussed.Suffix.Render(c.suffix),
-         )
+         c.listUnfocussedItemUnfocussed, _ = m.itemToString(c.item, m.Styles.Unfocussed.Item.Unfocussed)
+         c.listUnfocussedItemFocussed, _ = m.itemToString(c.item, m.Styles.Unfocussed.Item.Focussed)
+         c.listFocussedItemUnfocussed, _ = m.itemToString(c.item, m.Styles.Focussed.Item.Unfocussed)
+         c.listFocussedItemFocussed, _ = m.itemToString(c.item, m.Styles.Focussed.Item.Focussed)
          m.itemRenderCacheChannel <- &c
       }
       close(m.itemRenderCacheChannel)
