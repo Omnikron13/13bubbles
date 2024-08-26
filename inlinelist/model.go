@@ -154,24 +154,24 @@ func (m *Model[T]) IsFocussed() bool {
 
 // itemToString converts an item of type T to a string, using RenderPrefix(), RenderItem(), and RenderSuffix()
 // functions (if set), returning a styled string and the unstyled rune length.
-func (m *Model[T]) itemToString(item *T, style ItemStyleStates) (string, int) {
+func (m *Model[T]) itemToString(item *T, style ItemStyle) (string, int) {
    var sb strings.Builder
    var n int
 
    if m.RenderPrefix != nil {
       s := m.RenderPrefix(*item)
-      sb.WriteString(style.Unfocussed.Prefix.Render(s))
       n += countGraphemes(s)
+      sb.WriteString(style.Prefix.Render(s))
    }
 
    s := m.RenderItem(*item)
-   sb.WriteString(style.Unfocussed.Main.Render(s))
    n += countGraphemes(s)
+   sb.WriteString(style.Main.Render(s))
 
    if m.RenderSuffix != nil {
       s := m.RenderSuffix(*item)
-      sb.WriteString(style.Unfocussed.Suffix.Render(s))
       n += countGraphemes(s)
+      sb.WriteString(style.Suffix.Render(s))
    }
 
    return sb.String(), n
