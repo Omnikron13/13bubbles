@@ -3,7 +3,6 @@ package inlinelist
 import (
    "fmt"
    "strings"
-   "unicode/utf8"
 
    bt "github.com/charmbracelet/bubbletea"
    "github.com/charmbracelet/bubbles/key"
@@ -161,18 +160,18 @@ func (m *Model[T]) itemToString(item *T, style ItemStyleStates) (string, int) {
 
    if m.RenderPrefix != nil {
       s := m.RenderPrefix(*item)
-      n += utf8.RuneCountInString(s)
       sb.WriteString(style.Unfocussed.Prefix.Render(s))
+      n += countGraphemes(s)
    }
 
    s := m.RenderItem(*item)
-   n += utf8.RuneCountInString(s)
    sb.WriteString(style.Unfocussed.Main.Render(s))
+   n += countGraphemes(s)
 
    if m.RenderSuffix != nil {
       s := m.RenderSuffix(*item)
-      n += utf8.RuneCountInString(s)
       sb.WriteString(style.Unfocussed.Suffix.Render(s))
+      n += countGraphemes(s)
    }
 
    return sb.String(), n
