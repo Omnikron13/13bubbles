@@ -14,7 +14,7 @@ type ItemStyle struct {
 
 // ItemStyleStates is a type grouping ItemStyle structs for different states of a list item
 type ItemStyleStates struct {
-   Normal ItemStyle
+   Unfocussed ItemStyle
    Focussed ItemStyle
 }
 
@@ -34,55 +34,55 @@ type StyleStates struct {
 
 // DefaultStyles returns a new StyleStates struct with the given styles.
 func DefaultStyles() StyleStates {
-   unfocussedItemNormal := ItemStyle {
+   unfocussedListUnfocussedItem := ItemStyle {
       Main: lg.NewStyle().
          Foreground(lg.Color("#bac2de")),
       Prefix: lg.NewStyle(),
       Suffix: lg.NewStyle(),
    }
-   unfocussedItemFocussed := ItemStyle {
-      Main: unfocussedItemNormal.Main.
+   unfocussedListFocussedItem := ItemStyle {
+      Main: unfocussedListUnfocussedItem.Main.
          Foreground(lg.Color("#f5e0dc")),
-      Prefix: unfocussedItemNormal.Prefix.
+      Prefix: unfocussedListUnfocussedItem.Prefix.
          Foreground(lg.Color("#f9e2af")),
-      Suffix: unfocussedItemNormal.Suffix.
+      Suffix: unfocussedListUnfocussedItem.Suffix.
          Foreground(lg.Color("#99d1db")),
    }
-   focussedItemNormal := ItemStyle {
-      Main: unfocussedItemNormal.Main.
+   focussedListUnfocussedItem := ItemStyle {
+      Main: unfocussedListUnfocussedItem.Main.
          Foreground(lg.Color("#cdd6f4")),
-      Prefix: unfocussedItemNormal.Prefix.
+      Prefix: unfocussedListUnfocussedItem.Prefix.
          Foreground(lg.Color("#B9957F")),
-      Suffix: unfocussedItemNormal.Suffix.
+      Suffix: unfocussedListUnfocussedItem.Suffix.
          Foreground(lg.Color("#99d1db")),
    }
-   focussedItemFocussed := ItemStyle {
-      Main: focussedItemNormal.Main.
+   focussedListFocussedItem := ItemStyle {
+      Main: focussedListUnfocussedItem.Main.
          Foreground(lg.Color("#f9e2af")).
          Bold(true),
-      Prefix: focussedItemNormal.Prefix.
+      Prefix: focussedListUnfocussedItem.Prefix.
          Foreground(lg.Color("#fab387")).
          Bold(true),
-      Suffix: focussedItemNormal.Suffix.
+      Suffix: focussedListUnfocussedItem.Suffix.
          Foreground(lg.Color("#89dceb")),
    }
-   unfocussed := Style {
+   unfocussedList := Style {
       List: lg.NewStyle(),
       Item: ItemStyleStates {
-         Normal: unfocussedItemNormal,
-         Focussed: unfocussedItemFocussed,
+         Unfocussed: unfocussedListUnfocussedItem,
+         Focussed: unfocussedListFocussedItem,
       },
    }
-   focussed := Style {
+   focussedList := Style {
       List: lg.NewStyle(),
       Item: ItemStyleStates {
-         Normal: focussedItemNormal,
-         Focussed: focussedItemFocussed,
+         Unfocussed: focussedListUnfocussedItem,
+         Focussed: focussedListFocussedItem,
       },
    }
    return StyleStates{
-      Unfocussed: unfocussed,
-      Focussed:   focussed,
+      Unfocussed: unfocussedList,
+      Focussed:   focussedList,
    }
 }
 

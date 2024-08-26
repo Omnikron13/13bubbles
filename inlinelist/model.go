@@ -14,12 +14,12 @@ import (
 // and the _styled_ rendered string.
 type CachedItem[T any] struct {
    item *T
-   suffix, main, prefix, listFocussedNormal, listUnfocussedNormal, listFocussedItemFocussed, listUnfocussedItemFocussed string
+   suffix, main, prefix, listFocussedItemUnfocussed, listUnfocussedItemUnfocussed, listFocussedItemFocussed, listUnfocussedItemFocussed string
 }
 
 
 // Model is a widget that displays a list of items that flow horizontally as a paragraph, joined by a
-// separator, with optional prefix and/or suffix for each item. Additionally if supports selecting items with a
+// separator, with optional prefix and/or suffix for each item. Additionally it supports focussing items with a
 // 'cursor'.
 // TODO: add interface requirement for generic type T
 type Model[T any] struct {
@@ -40,10 +40,10 @@ type Model[T any] struct {
    // Separator that will be rendered between items
    separator string
 
-   // Whether the list can take focus to allow selecting items, and a pointer to the selected item (or nil if no item
-   // is currently selected).
-   Selectable bool
-   selected *T
+   // Whether the list can take focus to allow selecting items, and a pointer to the focussed item (or nil if no item
+   // is currently focussed).
+   Focussable bool
+   focussedItem *T
 
    // Whether the list has focus, which will enable or disable keybindings, possibly change styles, etc.
    focussed bool
@@ -57,7 +57,7 @@ type Model[T any] struct {
 
 
 // findIndex returns the index in the (displayed) list of the given item, or -1 if not found.
-// This is intended to keep track of the selected item if/when the list is changed, e.g. by filtering, sorting, etc.
+// This is intended to keep track of the focussed item if/when the list is changed, e.g. by filtering, sorting, etc.
 func (m *Model[T]) findIndex(item *T) int {
    for i := range m.Items {
       if &m.Items[i] == item {
@@ -87,13 +87,13 @@ func (m *Model[T]) Focus() {
 }
 
 
-// GetFocussed returns a pointer to the selected item, or nil if nothing is selected (yet?), the selected item is now
-// gone (e.g. if the list has been filtered), or the list is not flagged as selectable in the first place.
+// GetFocussed returns a pointer to the focussed item, or nil if nothing is focussed (yet?), the focussed item is now
+// gone (e.g. if the list has been filtered), or the list is not flagged as focusable in the first place.
 func (m *Model[T]) GetFocussed() *T {
-   if !m.Selectable || m.findIndex(m.selected) < 0 {
+   if !m.Focussable || m.findIndex(m.focussedItem) < 0 {
       return nil
    }
-   return m.selected
+   return m.focussedItem
 }
 
 
@@ -114,17 +114,17 @@ func (m *Model[T]) Init() (cmd bt.Cmd) {
          if m.RenderSuffix != nil {
             c.suffix = m.RenderSuffix(*item)
          }
-         c.listUnfocussedNormal = fmt.Sprintf(
+         c.listUnfocussedItemUnfocussed = fmt.Sprintf(
             "%s%s%s",
-            m.Styles.Unfocussed.Item.Normal.Prefix.Render(c.prefix),
-            m.Styles.Unfocussed.Item.Normal.Main.Render(c.main),
-            m.Styles.Unfocussed.Item.Normal.Suffix.Render(c.suffix),
+            m.Styles.Unfocussed.Item.Unfocussed.Prefix.Render(c.prefix),
+            m.Styles.Unfocussed.Item.Unfocussed.Main.Render(c.main),
+            m.Styles.Unfocussed.Item.Unfocussed.Suffix.Render(c.suffix),
          )
-         c.listFocussedNormal = fmt.Sprintf(
+         c.listFocussedItemUnfocussed = fmt.Sprintf(
             "%s%s%s",
-            m.Styles.Focussed.Item.Normal.Prefix.Render(c.prefix),
-            m.Styles.Focussed.Item.Normal.Main.Render(c.main),
-            m.Styles.Focussed.Item.Normal.Suffix.Render(c.suffix),
+            m.Styles.Focussed.Item.Unfocussed.Prefix.Render(c.prefix),
+            m.Styles.Focussed.Item.Unfocussed.Main.Render(c.main),
+            m.Styles.Focussed.Item.Unfocussed.Suffix.Render(c.suffix),
          )
          c.listUnfocussedItemFocussed = fmt.Sprintf(
             "%s%s%s",
@@ -162,17 +162,17 @@ func (m *Model[T]) itemToString(item *T, style ItemStyleStates) (string, int) {
    if m.RenderPrefix != nil {
       s := m.RenderPrefix(*item)
       n += utf8.RuneCountInString(s)
-      sb.WriteString(style.Normal.Prefix.Render(s))
+      sb.WriteString(style.Unfocussed.Prefix.Render(s))
    }
 
    s := m.RenderItem(*item)
    n += utf8.RuneCountInString(s)
-   sb.WriteString(style.Normal.Main.Render(s))
+   sb.WriteString(style.Unfocussed.Main.Render(s))
 
    if m.RenderSuffix != nil {
       s := m.RenderSuffix(*item)
       n += utf8.RuneCountInString(s)
-      sb.WriteString(style.Normal.Suffix.Render(s))
+      sb.WriteString(style.Unfocussed.Suffix.Render(s))
    }
 
    return sb.String(), n
@@ -197,18 +197,18 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
                cmd = bt.Quit
                return
          }
-         if m.Selectable {
-            i := m.findIndex(m.selected)
+         if m.Focussable {
+            i := m.findIndex(m.focussedItem)
             switch {
                case key.Matches(msg, m.KeyBindings.Next):
                   if i < len(m.Items)-1 {
-                     m.selected = &m.Items[i+1]
+                     m.focussedItem = &m.Items[i+1]
                   }
                case key.Matches(msg, m.KeyBindings.Prev):
                   if i > 0 {
-                     m.selected = &m.Items[i-1]
+                     m.focussedItem = &m.Items[i-1]
                   } else if i < 0 {
-                     m.selected = &m.Items[len(m.Items)-1]
+                     m.focussedItem = &m.Items[len(m.Items)-1]
                   }
                case key.Matches(msg, key.NewBinding(key.WithKeys("enter"))):
                   m.focussed = !m.focussed
@@ -237,7 +237,7 @@ func (m *Model[T]) View() string {
    }
 
    for i, c := range m.itemRenderCache {
-      if m.Selectable && c.item == m.selected {
+      if m.Focussable && c.item == m.focussedItem {
          if m.focussed {
             sb.WriteString(c.listFocussedItemFocussed)
          } else {
@@ -245,9 +245,9 @@ func (m *Model[T]) View() string {
          }
       } else {
          if m.focussed {
-            sb.WriteString(c.listFocussedNormal)
+            sb.WriteString(c.listFocussedItemUnfocussed)
          } else {
-            sb.WriteString(c.listUnfocussedNormal)
+            sb.WriteString(c.listUnfocussedItemUnfocussed)
          }
       }
 
