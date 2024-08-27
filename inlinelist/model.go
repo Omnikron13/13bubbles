@@ -235,6 +235,6 @@ func (m *Model[T]) View() string {
       }
    }
 
-   return styles.List.Render(sb.String())
+   return m.Styles.Focussed.List.Render(sb.String())
 }
 
