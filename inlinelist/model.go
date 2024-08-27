@@ -139,17 +139,17 @@ func (m *Model[T]) itemToString(item *T, style ItemStyle) (string, int) {
    var n int
 
    if m.RenderPrefix != nil {
-      s := m.RenderPrefix(*item)
+      s := noBreak(m.RenderPrefix(*item))
       n += countGraphemes(s)
       sb.WriteString(style.Prefix.Render(s))
    }
 
-   s := m.RenderItem(*item)
+   s := noBreak(m.RenderItem(*item))
    n += countGraphemes(s)
    sb.WriteString(style.Main.Render(s))
 
    if m.RenderSuffix != nil {
-      s := m.RenderSuffix(*item)
+      s := noBreak(m.RenderSuffix(*item))
       n += countGraphemes(s)
       sb.WriteString(style.Suffix.Render(s))
    }
