@@ -9,6 +9,15 @@ import (
 )
 
 
+func TestNoBreak(t *testing.T) {
+   t.Parallel()
+   t.Run("space", func(t *testing.T) {
+      t.Parallel()
+      assert.Equal(t, "a\u00A0b\u00A0c", noBreak("a b c"))
+   })
+}
+
+
 func TestNormalise(t *testing.T) {
    t.Parallel()
    a := []byte("C\u0327")
