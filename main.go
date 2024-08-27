@@ -68,6 +68,8 @@ func main() {
       }
    }
 
+   l.Styles.Focussed.List = l.Styles.Focussed.List.Width(35)
+
    p := bt.NewProgram(&l, bt.WithAltScreen())
 
    if m, err := p.Run(); err != nil { bt.ErrProgramKilled.Error() } else {
