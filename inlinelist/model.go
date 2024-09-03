@@ -22,13 +22,7 @@ type CachedItem[T any] struct {
 // 'cursor'.
 // TODO: add interface requirement for generic type T
 type Model[T any] struct {
-   Items []T
-
-   // itemRenderCache is a cache of the strings the render functions return, operating on the assumption that they are
-   // supposed to always return the same string for a given item (i.e. pure functions).
-   // TODO: add a method to explicitly rebuild the cache for situations where the render functions are not pure.
-   itemRenderCache []CachedItem[T]
-   itemRenderCacheChannel chan *CachedItem[T]
+   Items []item[T]
 
    // These functions control how an item of type T should be rendered, with optional prefix and suffix which can have
    // their own styles, and excluded from any filtering, sorting, etc. of the list.
@@ -42,7 +36,7 @@ type Model[T any] struct {
    // Whether the list can take focus to allow selecting items, and a pointer to the focussed item (or nil if no item
    // is currently focussed).
    Focussable bool
-   focussedItem *T
+   focussedItem *item[T]
 
    // Whether the list has focus, which will enable or disable keybindings, possibly change styles, etc.
    focussed bool
@@ -57,7 +51,7 @@ type Model[T any] struct {
 
 // findIndex returns the index in the (displayed) list of the given item, or -1 if not found.
 // This is intended to keep track of the focussed item if/when the list is changed, e.g. by filtering, sorting, etc.
-func (m *Model[T]) findIndex(item *T) int {
+func (m *Model[T]) findIndex(item *item[T]) int {
    for i := range m.Items {
       if &m.Items[i] == item {
          return i
@@ -68,13 +62,15 @@ func (m *Model[T]) findIndex(item *T) int {
 
 
 // New creates a new Model with the given items and options.
-func New[T any](items ...T) (m Model[T]) {
-   m = Model[T] {
-      Items: items,
+func New[T any](items ...T) (m *Model[T]) {
+   m = &Model[T] {
       separator: ", ",
       RenderItem: func (item T) string { return fmt.Sprintf("%v", item) },
       KeyBindings: defaultKeyMap(),
       Styles: DefaultStyles(),
+   }
+   for _, i := range items {
+      m.Items = append(m.Items, *newitem(i, m))
    }
    return
 }
@@ -88,7 +84,7 @@ func (m *Model[T]) Focus() {
 
 // GetFocussed returns a pointer to the focussed item, or nil if nothing is focussed (yet?), the focussed item is now
 // gone (e.g. if the list has been filtered), or the list is not flagged as focusable in the first place.
-func (m *Model[T]) GetFocussed() *T {
+func (m *Model[T]) GetFocussed() *item[T] {
    if !m.Focussable || m.findIndex(m.focussedItem) < 0 {
       return nil
    }
@@ -98,30 +94,9 @@ func (m *Model[T]) GetFocussed() *T {
 
 // Init initializes the Model; part of the bubbletea Model interface.
 func (m *Model[T]) Init() (cmd bt.Cmd) {
-   m.itemRenderCache = make([]CachedItem[T], 0, len(m.Items))
-   m.itemRenderCacheChannel = make(chan *CachedItem[T], len(m.Items))
-   go func() {
-      for i := range m.Items {
-         item := &m.Items[i]
-         c := CachedItem[T] {
-            item: item,
-            main: m.RenderItem(*item),
-         }
-         if m.RenderPrefix != nil {
-            c.prefix = m.RenderPrefix(*item)
-         }
-         if m.RenderSuffix != nil {
-            c.suffix = m.RenderSuffix(*item)
-         }
-         c.listUnfocussedItemUnfocussed, _ = m.itemToString(c.item, m.Styles.Unfocussed.Item.Unfocussed)
-         c.listUnfocussedItemFocussed, _ = m.itemToString(c.item, m.Styles.Unfocussed.Item.Focussed)
-         c.listFocussedItemUnfocussed, _ = m.itemToString(c.item, m.Styles.Focussed.Item.Unfocussed)
-         c.listFocussedItemFocussed, _ = m.itemToString(c.item, m.Styles.Focussed.Item.Focussed)
-         m.itemRenderCacheChannel <- &c
-      }
-      close(m.itemRenderCacheChannel)
-   }()
-
+   for _, i := range m.Items {
+      i.renderCache()
+   }
    return
 }
 
@@ -129,32 +104,6 @@ func (m *Model[T]) Init() (cmd bt.Cmd) {
 // IsFocussed returns whether the Model has focus.
 func (m *Model[T]) IsFocussed() bool {
    return m.focussed
-}
-
-
-// itemToString converts an item of type T to a string, using RenderPrefix(), RenderItem(), and RenderSuffix()
-// functions (if set), returning a styled string and the unstyled rune length.
-func (m *Model[T]) itemToString(item *T, style ItemStyle) (string, int) {
-   var sb strings.Builder
-   var n int
-
-   if m.RenderPrefix != nil {
-      s := noBreak(m.RenderPrefix(*item))
-      n += countGraphemes(s)
-      sb.WriteString(style.Prefix.Render(s))
-   }
-
-   s := noBreak(m.RenderItem(*item))
-   n += countGraphemes(s)
-   sb.WriteString(style.Main.Render(s))
-
-   if m.RenderSuffix != nil {
-      s := noBreak(m.RenderSuffix(*item))
-      n += countGraphemes(s)
-      sb.WriteString(style.Suffix.Render(s))
-   }
-
-   return sb.String(), n
 }
 
 
@@ -177,6 +126,9 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
                return
          }
          if m.Focussable {
+            // TODO: deal with defocusing more elegantly?
+            if m.focussedItem != nil { m.focussedItem.focussed = false }
+
             i := m.findIndex(m.focussedItem)
             switch {
                case key.Matches(msg, m.KeyBindings.Next):
@@ -192,6 +144,8 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
                case key.Matches(msg, key.NewBinding(key.WithKeys("enter"))):
                   m.focussed = !m.focussed
             }
+
+            if m.focussedItem != nil { m.focussedItem.focussed = true }
          }
    }
 
@@ -202,10 +156,6 @@ func (m *Model[T]) Update(msg bt.Msg) (model bt.Model, cmd bt.Cmd) {
 
 // View renders the Model; part of the bubbletea Model interface.
 func (m *Model[T]) View() string {
-   for c := range m.itemRenderCacheChannel {
-      m.itemRenderCache = append(m.itemRenderCache, *c)
-   }
-
    var sb strings.Builder
 
    var styles Style
@@ -215,22 +165,10 @@ func (m *Model[T]) View() string {
       styles = m.Styles.Unfocussed
    }
 
-   for i, c := range m.itemRenderCache {
-      if m.Focussable && c.item == m.focussedItem {
-         if m.focussed {
-            sb.WriteString(c.listFocussedItemFocussed)
-         } else {
-            sb.WriteString(c.listUnfocussedItemFocussed)
-         }
-      } else {
-         if m.focussed {
-            sb.WriteString(c.listFocussedItemUnfocussed)
-         } else {
-            sb.WriteString(c.listUnfocussedItemUnfocussed)
-         }
-      }
+   for n, i := range m.Items {
+      sb.WriteString(i.render())
 
-      if i < len(m.Items)-1 {
+      if n < len(m.Items)-1 {
          sb.WriteString(styles.Seperator.Render(m.separator))
       }
    }
