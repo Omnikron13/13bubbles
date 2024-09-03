@@ -58,11 +58,9 @@ func DefaultStyles() StyleStates {
    }
    focussedListFocussedItem := ItemStyle {
       Main: focussedListUnfocussedItem.Main.
-         Foreground(lg.Color("#f9e2af")).
-         Bold(true),
+         Foreground(lg.Color("#f9e2af")),
       Prefix: focussedListUnfocussedItem.Prefix.
-         Foreground(lg.Color("#fab387")).
-         Bold(true),
+         Foreground(lg.Color("#fab387")),
       Suffix: focussedListUnfocussedItem.Suffix.
          Foreground(lg.Color("#89dceb")),
    }
